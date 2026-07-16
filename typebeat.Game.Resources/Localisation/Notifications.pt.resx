@@ -1,0 +1,218 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="header_title" xml:space="preserve">
+    <value>notificações</value>
+  </data>
+  <data name="header_description" xml:space="preserve">
+    <value>à sua espera</value>
+  </data>
+  <data name="running_tasks" xml:space="preserve">
+    <value>Tarefas em execução</value>
+  </data>
+  <data name="clear_all" xml:space="preserve">
+    <value>Limpar tudo</value>
+  </data>
+  <data name="battery_low" xml:space="preserve">
+    <value>O nível da sua bateria está baixo! Carregue o dispositivo para evitar interrupções durante o jogo.</value>
+  </data>
+  <data name="game_volume_too_low" xml:space="preserve">
+    <value>O volume do jogo está demasiado baixo para ouvir algo! Clique aqui para o restaurar.</value>
+  </data>
+  <data name="no_autoplay_mod" xml:space="preserve">
+    <value>Os modos de jogo atuais não têm uma modificação de reprodução automática disponível!</value>
+  </data>
+  <data name="audio_playback_issue" xml:space="preserve">
+    <value>O osu! parece não conseguir reproduzir áudio corretamente.
+
+Por favor, tente alterar o seu dispositivo de áudio para uma configuração funcional.</value>
+  </data>
+  <data name="score_overlay_disabled" xml:space="preserve">
+    <value>A sobreposição de pontuação está desativada de momento. Pode alterná‑la premindo {0}.</value>
+  </data>
+  <data name="unsupported_or_dangerous_url_protocol" xml:space="preserve">
+    <value>O URL {0} utiliza um protocolo não suportado ou potencialmente perigoso e não será aberto.</value>
+  </data>
+  <data name="subsequent_messages_logged" xml:space="preserve">
+    <value>As mensagens seguintes foram registadas. Clique para ver os ficheiros de registo.</value>
+  </data>
+  <data name="tablet_support_disabled_due_to_error" xml:space="preserve">
+    <value>A desativar o suporte para tablet devido ao erro: "{0}"</value>
+  </data>
+  <data name="encountered_tablet_warning" xml:space="preserve">
+    <value>Foi detetado um aviso relacionado com o tablet. O seu tablet pode não funcionar corretamente. Clique aqui para ver a lista de tablets suportados.</value>
+  </data>
+  <data name="unsupported_link_type" xml:space="preserve">
+    <value>Este tipo de ligação ainda não é suportado!</value>
+  </data>
+  <data name="invited_you_to_the_multiplayer" xml:space="preserve">
+    <value>{0} convidou‑o para a partida multijogador "{1}"! Clique para entrar.</value>
+  </data>
+  <data name="missing_beatmap_for_replay" xml:space="preserve">
+    <value>Não tem o mapa necessário para esta repetição.</value>
+  </data>
+  <data name="downloading_beatmap_for_replay" xml:space="preserve">
+    <value>A transferir o mapa em falta para esta repetição...</value>
+  </data>
+  <data name="mismatching_beatmap_for_replay" xml:space="preserve">
+    <value>A sua cópia local do mapa para esta repetição parece ser diferente do esperado. Pode ser necessário atualizá‑la ou voltar a transferi‑la.</value>
+  </data>
+  <data name="game_version_after_update" xml:space="preserve">
+    <value>Agora está a executar o osu! {0}.
+Clique para ver o que há de novo!</value>
+  </data>
+  <data name="update_ready_to_install" xml:space="preserve">
+    <value>Atualização pronta para instalar. Clique para reiniciar!</value>
+  </data>
+  <data name="not_official_build" xml:space="preserve">
+    <value>Esta não é uma versão oficial do jogo. As pontuações não serão submetidas e outros sistemas online podem não funcionar como previsto.</value>
+  </data>
+  <data name="downloading_update" xml:space="preserve">
+    <value>A transferir a atualização...</value>
+  </data>
+  <data name="multiplayer_room_ended" xml:space="preserve">
+    <value>Esta sala multijogador foi encerrada. Clique para ver os resultados da sala.</value>
+  </data>
+  <data name="mention" xml:space="preserve">
+    <value>Menção</value>
+  </data>
+  <data name="mention_details" xml:space="preserve">
+    <value>{0} em {1}</value>
+  </data>
+  <data name="friend_online" xml:space="preserve">
+    <value>Online: {0}</value>
+  </data>
+  <data name="friend_offline" xml:space="preserve">
+    <value>Offline: {0}</value>
+  </data>
+  <data name="api_connection_interrupted" xml:space="preserve">
+    <value>A ligação aos serviços online foi interrompida. O osu! continuará a funcionar com funcionalidades limitadas.</value>
+  </data>
+  <data name="another_device_disconnect" xml:space="preserve">
+    <value>A sua sessão neste dispositivo foi terminada devido a um início de sessão da sua conta noutro dispositivo.</value>
+  </data>
+  <data name="account_change_disconnect" xml:space="preserve">
+    <value>A sua sessão foi terminada devido a uma alteração na sua conta. Por favor, inicie sessão novamente.</value>
+  </data>
+  <data name="downloading" xml:space="preserve">
+    <value>A transferir {0}</value>
+  </data>
+  <data name="collections_import_initialising" xml:space="preserve">
+    <value>A importação de coleções está a iniciar...</value>
+  </data>
+  <data name="reading_collections" xml:space="preserve">
+    <value>A ler coleções...</value>
+  </data>
+  <data name="collections_import_progress" xml:space="preserve">
+    <value>Importadas {0} coleções</value>
+  </data>
+  <data name="collections_import_progress_total" xml:space="preserve">
+    <value>Importadas {0} de {1} coleções</value>
+  </data>
+  <data name="error_automatically_reported" xml:space="preserve">
+    <value>Este erro foi comunicado automaticamente à equipa de desenvolvimento.</value>
+  </data>
+  <data name="update_available" xml:space="preserve">
+    <value>Foi encontrada uma versão mais recente do osu! ({0} → {1}).</value>
+  </data>
+  <data name="update_available_manual_install" xml:space="preserve">
+    <value>Clique aqui para transferir a nova versão, que pode ser instalada sobre a sua instalação atual.</value>
+  </data>
+  <data name="update_available_package_managed" xml:space="preserve">
+    <value>Verifique o seu gestor de pacotes/fornecedor para atualizar o osu!!</value>
+  </data>
+  <data name="action_interrupted_by_dialog" xml:space="preserve">
+    <value>Uma ação foi interrompida devido à apresentação de uma caixa de diálogo.</value>
+  </data>
+  <data name="file_export_ongoing" xml:space="preserve">
+    <value>A exportar {0}...</value>
+  </data>
+  <data name="file_export_finished" xml:space="preserve">
+    <value>Exportado {0}! Clique para ver.</value>
+  </data>
+  <data name="logs_export_ongoing" xml:space="preserve">
+    <value>A exportar registos...</value>
+  </data>
+  <data name="logs_export_finished" xml:space="preserve">
+    <value>Registos exportados! Clique para ver.</value>
+  </data>
+  <data name="elevated_privileges" xml:space="preserve">
+    <value>Executar o osu! como {0} não melhora o desempenho, pode quebrar integrações e representa um risco de segurança. Execute o jogo como um utilizador normal.</value>
+  </data>
+  <data name="macos_app_location" xml:space="preserve">
+    <value>No macOS, instalar o osu! numa pasta diferente de /Aplicações ou {0}/Aplicações pode causar problemas ao atualizar o jogo. Mova a sua instalação para um destes locais.</value>
+  </data>
+  <data name="screenshot_saved" xml:space="preserve">
+    <value>Captura de ecrã guardada! Clique para ver.
+{0}</value>
+  </data>
+  <data name="multiplayer_server_shutting_down_immediately" xml:space="preserve">
+    <value>O servidor multijogador voltará dentro de momentos...</value>
+  </data>
+  <data name="multiplayer_server_shutting_down_remaining" xml:space="preserve">
+    <value>O servidor multijogador será reiniciado dentro de {0}.</value>
+  </data>
+  <data name="collection_created" xml:space="preserve">
+    <value>Nova coleção "{0}" criada com {1} mapas.</value>
+  </data>
+  <data name="collection_beatmaps_added" xml:space="preserve">
+    <value>Adicionados {0} mapas à coleção "{1}".</value>
+  </data>
+</root>

@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <AssemblyName>typebeat.Game.Resources</AssemblyName>
+    <RootNamespace>typebeat.Game.Resources</RootNamespace>
+    <Title>type!beat resources</Title>
+    <Product>type!beat resources</Product>
+    <Company>ppy Pty Ltd</Company>
+  </PropertyGroup>
+  <PropertyGroup Label="Nuget">
+    <Title>type!beat resources</Title>
+    <PackageId>typebeat.Game.Resources</PackageId>
+    <Authors>ppy Pty Ltd, Sparpp</Authors>
+    <Description>Modified fork of ppy/osu-resources for the type!beat rhythm game, renamed to typebeat.Game.Resources throughout. Original resources copyright (c) ppy Pty Ltd, licensed CC BY-NC 4.0.</Description>
+    <!-- CC-BY-NC-4.0 is not an OSI/FSF-approved licence, so nuget.org rejects it as an SPDX
+         expression. Ship the licence text in the package instead (the supported route for
+         non-open-source terms). -->
+    <PackageLicenseFile>LICENCE.md</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/Sparpp/type-beat-assets</PackageProjectUrl>
+    <PackageReleaseNotes>Modified redistribution of ppy/osu-resources for type!beat.</PackageReleaseNotes>
+    <copyright>Copyright (c) 2019 ppy Pty Ltd</copyright>
+    <PackageTags>typebeat game resources</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\LICENCE.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Beatmaps\**\*" />
+    <EmbeddedResource Include="Fonts\**\*" />
+    <EmbeddedResource Include="Samples\**\*" />
+    <EmbeddedResource Include="Skins\**\*" />
+    <EmbeddedResource Include="Shaders\**\*" />
+    <EmbeddedResource Include="Textures\**\*" />
+    <EmbeddedResource Include="Tracks\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Resolves references to LocalisableString. -->
+    <PackageReference Include="ppy.osu.Framework" Version="2026.629.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
