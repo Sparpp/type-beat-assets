@@ -6,7 +6,7 @@ This is a modified fork of [ppy/osu-resources](https://github.com/ppy/osu-resour
 
 ## Licence
 
-All original resources are copyright (c) ppy Pty Ltd, licensed under [CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/legalcode) — see [the licence file](LICENCE.md). This fork is likewise non-commercial and retains that licence.
+All original resources are copyright (c) ppy Pty Ltd, licensed under [CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/legalcode); see [the licence file](LICENCE.md). This fork is likewise non-commercial and retains that licence.
 
 Some fonts have separate licencing; check their local licence files before distributing them.
 
