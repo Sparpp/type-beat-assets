@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>type!beat — web demo</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#141519; --bg-raised:#17181e; --surface:#191a20; --surface-2:#1f2027;
+  --line:rgba(233,234,228,.10); --line-bright:rgba(233,234,228,.22);
+  --text:#e9eae4; --text-muted:rgba(233,234,228,.55); --text-faint:rgba(233,234,228,.35);
+  --violet:#c9f24d; --violet-deep:#b0dd39; --violet-bright:#d3f66d; --on-accent:#141519;
+  --good:#c9f24d; --warn:#f2c14d; --bad:#ff6a5a;
+  --grad-primary:linear-gradient(90deg,var(--violet-deep),var(--violet));
+  --glow-violet:0 0 16px rgba(201,242,77,.18);
+  --font-display:'JetBrains Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+  --font-body:var(--font-display);
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem; --text-xl:1.375rem; --text-2xl:1.75rem;
+  --radius-md:8px; --radius-lg:12px; --radius-full:999px;
+  --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+@keyframes tbCaret{0%,45%{opacity:1;}50%,95%{opacity:0;}100%{opacity:1;}}
+@keyframes tbShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+.demo-wrap{width:min(920px,100%);}
+.demo-head{display:flex;align-items:baseline;gap:12px;margin:0 0 10px;}
+.demo-head b{font-size:var(--text-xl);}
+.demo-head span{color:var(--text-muted);font-size:var(--text-sm);}
+#mount{width:100%;}
+
+.tb-player{position:relative;background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--space-5);min-height:min(72vh,600px);display:flex;flex-direction:column;overflow:hidden;}
+.tb-hud{display:flex;gap:var(--space-6);align-items:baseline;}
+.tb-hud-stat{display:flex;flex-direction:column;}
+.tb-hud-val{font-size:var(--text-2xl);font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;}
+.tb-hud-lbl{font-size:var(--text-xs);color:var(--text-muted);}
+.tb-health{height:4px;border-radius:var(--radius-full);background:var(--surface-2);overflow:hidden;margin:var(--space-3) 0 0;}
+.tb-health-fill{height:100%;width:100%;background:var(--violet);transition:width .08s linear;}
+.tb-health-fill.tb-health-danger{background:var(--bad);}
+.tb-stage{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-4);text-align:center;padding:var(--space-5) 0;user-select:none;}
+.tb-line{font-family:var(--font-display);white-space:pre-wrap;word-break:break-word;line-height:1.35;letter-spacing:.02em;}
+.tb-line-prev,.tb-line-next{font-size:clamp(1rem,2.4vw,1.4rem);color:var(--text-faint);}
+.tb-line-cur{font-size:clamp(1.6rem,4.4vw,2.6rem);color:var(--text-muted);font-weight:600;}
+.tb-c{transition:color .06s linear;}
+.tb-c-todo{color:var(--text-muted);}
+.tb-c-hit{color:var(--violet);}
+.tb-c-off{color:var(--warn);}
+.tb-c-miss{color:var(--bad);opacity:.7;}
+.tb-line-cur .tb-c-todo{color:rgba(233,234,228,.45);}
+.tb-caret{display:inline-block;width:.08em;min-width:2px;background:var(--violet);margin:0 -.02em;animation:tbCaret 1.06s infinite;height:1.1em;transform:translateY(.16em);}
+.tb-progress{height:4px;border-radius:var(--radius-full);background:var(--surface-2);overflow:hidden;}
+.tb-progress-fill{height:100%;width:0;background:var(--violet-deep);}
+.tb-meta{margin-top:var(--space-3);font-size:var(--text-sm);color:var(--text-muted);text-align:center;}
+.tb-meta-title{color:var(--text);font-weight:700;}
+.tb-shake{animation:tbShake .18s linear;}
+.tb-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(20,21,25,.86);backdrop-filter:blur(3px);z-index:4;}
+.tb-overlay-on{display:flex;}
+.tb-card{background:var(--surface);border:1px solid var(--line-bright);border-radius:var(--radius-lg);padding:var(--space-6);text-align:center;width:min(92%,460px);display:flex;flex-direction:column;gap:var(--space-3);align-items:center;}
+.tb-card-title{font-size:var(--text-2xl);font-weight:700;}
+.tb-card-sub{color:var(--text-muted);}
+.tb-card-hint{color:var(--text-faint);font-size:var(--text-sm);}
+.tb-btn{font-family:var(--font-body);font-size:var(--text-base);padding:var(--space-3) var(--space-5);border-radius:var(--radius-md);border:1px solid transparent;cursor:pointer;}
+.tb-btn-primary{background:var(--violet);color:var(--on-accent);font-weight:700;}
+.tb-btn-primary:hover{filter:brightness(1.06);}
+.tb-btn-ghost{background:transparent;border-color:var(--line-bright);color:var(--text);}
+.tb-rank{font-size:4rem;font-weight:800;line-height:1;font-family:var(--font-display);}
+.tb-rank-X{color:var(--violet-bright);}.tb-rank-S{color:var(--violet);}.tb-rank-A{color:var(--good);}
+.tb-rank-B{color:#7fd0e6;}.tb-rank-C{color:var(--warn);}.tb-rank-D{color:var(--text-muted);}.tb-rank-F{color:var(--bad);}
+.tb-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3) var(--space-4);width:100%;margin:var(--space-2) 0;}
+.tb-result-cell{display:flex;flex-direction:column;}
+.tb-result-val{font-size:var(--text-lg);font-weight:700;font-variant-numeric:tabular-nums;}
+.tb-result-lbl{font-size:var(--text-xs);color:var(--text-muted);}
+.tb-submit-status{min-height:1.4em;font-size:var(--text-sm);color:var(--text-muted);}
+.tb-status-muted{color:var(--text-muted);}
+.tb-result-actions{display:flex;gap:var(--space-3);flex-wrap:wrap;justify-content:center;}
+.tb-loading{padding:var(--space-8);text-align:center;color:var(--text-muted);}
+</style>
+</head>
+<body>
+<div class="demo-wrap">
+  <div class="demo-head"><b>type<span style="color:var(--violet)">!</span>beat</b><span>web demo — type the lyrics in time · 13 wrong keys in a row = fail</span></div>
+  <div id="mount"><div class="tb-loading">loading demo…</div></div>
+</div>
+
+<script type="application/x-typebeat-osu" id="tb-osu-data">type!beat file format v1
+
+[General]
+AudioFilename: what if its over.mp3
+AudioLeadIn: 0
+PreviewTime: 54409
+Countdown: 0
+SampleSet: None
+
+[Metadata]
+Title:what if its over
+TitleUnicode:what if its over
+Artist:AI Garbage
+ArtistUnicode:AI Garbage
+Creator:Spuro
+Version:type!beat
+Tags:typebeat lyrics typing
+BeatmapID:3
+BeatmapSetID:3
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:5
+OverallDifficulty:5
+ApproachRate:5
+SliderMultiplier:1.4
+SliderTickRate:1
+
+[TimingPoints]
+0,500,4,2,0,100,1,0
+
+[Lyrics]
+{"version":2,"song_end_ms":116820,"beatdrop_ms":46502,"granularity":"Word"}
+{"text":"what if its over","start_ms":15800,"end_ms":17440,"estimated":true,"words":[{"text":"what","start_ms":15800,"end_ms":16160,"score":0},{"text":"if","start_ms":16160,"end_ms":16380,"score":0},{"text":"its","start_ms":16380,"end_ms":16740,"score":0},{"text":"over","start_ms":16740,"end_ms":17440,"score":0}]}
+{"text":"what if its not","start_ms":19520,"end_ms":21012.97386437162,"words":[{"text":"what","start_ms":19520,"end_ms":19740,"score":0.063},{"text":"if","start_ms":19740,"end_ms":19940,"score":0.213},{"text":"its","start_ms":19940,"end_ms":20220,"score":0.074},{"text":"not","start_ms":20220,"end_ms":20999.371590963474,"score":0.201}]}
+{"text":"what if i know","start_ms":23201.71831631696,"end_ms":25091.186241828746,"words":[{"text":"what","start_ms":23240,"end_ms":23460,"score":0.094},{"text":"if","start_ms":23460,"end_ms":23660,"score":0.314},{"text":"i","start_ms":23660,"end_ms":23760,"score":0.004},{"text":"know","start_ms":23760,"end_ms":24705.074347045163,"score":0.267}]}
+{"text":"what if i dont","start_ms":25099.49894409971,"end_ms":26425.72546409798,"words":[{"text":"what","start_ms":25120,"end_ms":25320,"score":0.12},{"text":"if","start_ms":25320,"end_ms":25680,"score":0.329},{"text":"i","start_ms":25680,"end_ms":25780,"score":0.01},{"text":"dont","start_ms":25800,"end_ms":26120,"score":0.156}]}
+{"text":"what if i waited","start_ms":26960,"end_ms":29037.043839165293,"words":[{"text":"what","start_ms":26960,"end_ms":27180,"score":0.122},{"text":"if","start_ms":27180,"end_ms":27540,"score":0.382},{"text":"i","start_ms":27540,"end_ms":27680,"score":0.008},{"text":"waited","start_ms":27680,"end_ms":29030.11599122637,"score":1}]}
+{"text":"what if its over","start_ms":30680,"end_ms":33036.9080673684,"words":[{"text":"what","start_ms":30680,"end_ms":30900,"score":0.093},{"text":"if","start_ms":30900,"end_ms":31120,"score":0.308},{"text":"its","start_ms":31120,"end_ms":31440,"score":0.101},{"text":"over","start_ms":31440,"end_ms":33036.9080673684,"score":0.078}]}
+{"text":"what if its not","start_ms":34404.36985327678,"end_ms":35560,"estimated":true,"words":[{"text":"what","start_ms":34420,"end_ms":34780,"score":0},{"text":"if","start_ms":34780,"end_ms":35000,"score":0},{"text":"its","start_ms":35000,"end_ms":35360,"score":0},{"text":"not","start_ms":35360,"end_ms":35560,"score":0}]}
+{"text":"what if i know","start_ms":38100,"end_ms":39120,"estimated":true,"words":[{"text":"what","start_ms":38100,"end_ms":38460,"score":0},{"text":"if","start_ms":38460,"end_ms":38680,"score":0},{"text":"i","start_ms":38680,"end_ms":38840,"score":0},{"text":"know","start_ms":38840,"end_ms":39120,"score":0}]}
+{"text":"what if i dont","start_ms":40000,"end_ms":41580,"estimated":true,"words":[{"text":"what","start_ms":40000,"end_ms":40360,"score":0},{"text":"if","start_ms":40360,"end_ms":40580,"score":0},{"text":"i","start_ms":40580,"end_ms":40720,"score":0},{"text":"dont","start_ms":40720,"end_ms":41580,"score":0}]}
+{"text":"what if i waited","start_ms":41840,"end_ms":44366.40252280447,"words":[{"text":"what","start_ms":41840,"end_ms":42060,"score":0.065},{"text":"if","start_ms":42060,"end_ms":42440,"score":0.179},{"text":"i","start_ms":42440,"end_ms":42580,"score":0.013},{"text":"waited","start_ms":42580,"end_ms":44366.40252280447,"score":0.155}]}
+{"text":"maybe i wont","start_ms":45535.652361407454,"end_ms":47254.60779799753,"words":[{"text":"maybe","start_ms":45560,"end_ms":45880,"score":0.15},{"text":"i","start_ms":45880,"end_ms":46040,"score":0.389},{"text":"wont","start_ms":46040,"end_ms":46520,"score":0.009}]}
+{"text":"maybe i wont","start_ms":53040,"end_ms":54774.37904308802,"estimated":true,"words":[{"text":"maybe","start_ms":53040,"end_ms":53480,"score":0},{"text":"i","start_ms":53480,"end_ms":53620,"score":0},{"text":"wont","start_ms":53620,"end_ms":54140,"score":0}]}
+{"text":"what if its over","start_ms":75300,"end_ms":76980,"estimated":true,"words":[{"text":"what","start_ms":75300,"end_ms":75660,"score":0},{"text":"if","start_ms":75660,"end_ms":75880,"score":0},{"text":"its","start_ms":75880,"end_ms":76240,"score":0},{"text":"over","start_ms":76240,"end_ms":76980,"score":0}]}
+{"text":"what if its not","start_ms":79060,"end_ms":80200,"estimated":true,"words":[{"text":"what","start_ms":79060,"end_ms":79420,"score":0},{"text":"if","start_ms":79420,"end_ms":79640,"score":0},{"text":"its","start_ms":79640,"end_ms":79940,"score":0},{"text":"not","start_ms":80000,"end_ms":80200,"score":0}]}
+{"text":"what if i know","start_ms":82780,"end_ms":83800,"estimated":true,"words":[{"text":"what","start_ms":82780,"end_ms":83060,"score":0},{"text":"if","start_ms":83140,"end_ms":83360,"score":0},{"text":"i","start_ms":83360,"end_ms":83520,"score":0},{"text":"know","start_ms":83520,"end_ms":83800,"score":0}]}
+{"text":"what if i dont","start_ms":84640,"end_ms":85720,"estimated":true,"words":[{"text":"what","start_ms":84640,"end_ms":85000,"score":0},{"text":"if","start_ms":85000,"end_ms":85220,"score":0},{"text":"i","start_ms":85220,"end_ms":85360,"score":0},{"text":"dont","start_ms":85360,"end_ms":85720,"score":0}]}
+{"text":"what if i waited","start_ms":86460,"end_ms":88901.64408578846,"words":[{"text":"what","start_ms":86460,"end_ms":86720,"score":0.089},{"text":"if","start_ms":86720,"end_ms":86920,"score":0.234},{"text":"i","start_ms":86920,"end_ms":87220,"score":0.007},{"text":"waited","start_ms":87220,"end_ms":88908.57193372738,"score":1}]}
+{"text":"what if its over","start_ms":90240,"end_ms":92000,"estimated":true,"words":[{"text":"what","start_ms":90240,"end_ms":90600,"score":0},{"text":"if","start_ms":90600,"end_ms":90820,"score":0},{"text":"its","start_ms":90820,"end_ms":91180,"score":0},{"text":"over","start_ms":91180,"end_ms":92000,"score":0}]}
+{"text":"what if its not","start_ms":93940,"end_ms":95080,"estimated":true,"words":[{"text":"what","start_ms":93940,"end_ms":94300,"score":0},{"text":"if","start_ms":94300,"end_ms":94520,"score":0},{"text":"its","start_ms":94520,"end_ms":94860,"score":0},{"text":"not","start_ms":94880,"end_ms":95080,"score":0}]}
+{"text":"what if i know","start_ms":97660,"end_ms":99500,"words":[{"text":"what","start_ms":97660,"end_ms":97880,"score":0.03},{"text":"if","start_ms":97880,"end_ms":98080,"score":0.415},{"text":"i","start_ms":98080,"end_ms":98160,"score":0.007},{"text":"know","start_ms":98160,"end_ms":99500,"score":0.153}]}
+{"text":"what if i dont","start_ms":99500,"end_ms":101463.48722766711,"words":[{"text":"what","start_ms":99500,"end_ms":99740,"score":0.034},{"text":"if","start_ms":99740,"end_ms":99940,"score":0.481},{"text":"i","start_ms":99940,"end_ms":100220,"score":0.002},{"text":"dont","start_ms":100220,"end_ms":100700,"score":0.399}]}
+{"text":"what if i waited","start_ms":101463.48722766711,"end_ms":105096.19819741453,"words":[{"text":"what","start_ms":101463.48722766711,"end_ms":101625.10867890713,"score":1},{"text":"if","start_ms":101625.10867890713,"end_ms":101866.50269105131,"score":1},{"text":"i","start_ms":101866.50269105131,"end_ms":102146.50269105131,"score":1},{"text":"waited","start_ms":102146.50269105131,"end_ms":103819.60554571087,"score":1}]}
+{"text":"maybe i wont","start_ms":105100,"end_ms":107257.2366862689,"words":[{"text":"maybe","start_ms":105100,"end_ms":105400,"score":0.222},{"text":"i","start_ms":105400,"end_ms":105560,"score":0.836},{"text":"wont","start_ms":105560,"end_ms":106260,"score":0.028}]}
+{"text":"maybe i wont","start_ms":112560,"end_ms":114461.74279502487,"estimated":true,"words":[{"text":"maybe","start_ms":112560,"end_ms":113000,"score":0},{"text":"i","start_ms":113000,"end_ms":113140,"score":0},{"text":"wont","start_ms":113140,"end_ms":113820,"score":0}]}
+</script>
+<script>/*
+ * typebeat-core.js — a faithful, dependency-free reimplementation of the
+ * type!beat typing gameplay for the browser.
+ *
+ * This mirrors the desktop client's headless gameplay core
+ * (typebeat.Game.Rulesets.TypeBeat: TypingEngine, TypingLine, Judgement,
+ * TypeBeatHealthProcessor) and the standardised scorer (osu ScoreProcessor +
+ * TypeBeatScoreProcessor) closely enough that a play here produces the same
+ * statistics / total_score the desktop would, so scores interoperate on the
+ * same leaderboards. See the recon spec in the repo history for the exact rules
+ * each block reproduces.
+ *
+ * Vanilla JS on purpose — no framework, no bundler (matches the rest of the site).
+ * Exposes window.TypeBeatCore.
+ */
+(function (global) {
+    'use strict';
+
+    // ---------------------------------------------------------------------------
+    // Typeability — text normalization (mirrors Typeability in LyricBeatmap.cs).
+    // ---------------------------------------------------------------------------
+    function isTypeable(ch) {
+        return ch === ' ' ||
+            (ch >= 'a' && ch <= 'z') ||
+            (ch >= 'A' && ch <= 'Z') ||
+            (ch >= '0' && ch <= '9');
+    }
+
+    function fold(ch) {
+        return ch.toLowerCase();
+    }
+
+    // Remove bracketed backing-vocal spans, "(...)" and "[...]", with a shared depth
+    // counter across both bracket types; an UNCLOSED bracket strips to end-of-string
+    // (mirrors Typeability.StripBackingVocals; regexes diverged on unclosed/nested spans).
+    // Applied only to format v1 lyrics (see buildBeatmap): from v2 on, a bracket is a
+    // literal lyric mark and its content is typed, so only the marks themselves drop
+    // out of the typed surface below.
+    function stripBackingVocals(raw) {
+        if (!raw) return '';
+        let out = '', depth = 0;
+        for (const c of raw) {
+            if (c === '(' || c === '[') { depth++; continue; }
+            if (c === ')' || c === ']') { if (depth > 0) depth--; continue; }
+            if (depth === 0) out += c;
+        }
+        return out;
+    }
+
+    // Count typeable chars in a token (for interpolation weights).
+    function typeableCount(text) {
+        let n = 0;
+        for (const c of text) if (isTypeable(c)) n++;
+        return n;
+    }
+
+    // NFD-fold diacritics, map curly punctuation to ASCII, DROP every non-space
+    // char that isn't typeable, collapse whitespace, trim. So "don't" -> "dont",
+    // "well-being" -> "wellbeing". The typed surface is only [a-z0-9 ].
+    function normalize(s) {
+        if (s == null) return '';
+        s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+        s = s
+            .replace(/[‘’‛′]/g, "'")
+            .replace(/[“”″]/g, '"')
+            .replace(/[–—―]/g, '-')
+            .replace(/ /g, ' ');
+        let out = '';
+        for (const ch of s) {
+            if (isTypeable(ch)) out += ch;
+            else if (/\s/.test(ch)) out += ' ';
+            // else: dropped entirely (punctuation etc.)
+        }
+        return out.replace(/\s+/g, ' ').trim();
+    }
+
+    // ---------------------------------------------------------------------------
+    // Parse the ".osu"-derived type!beat lyric text.
+    // ---------------------------------------------------------------------------
+    function parseLyricOsu(text) {
+        if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // strip BOM
+        const rows = String(text).split(/\r?\n/);
+        const general = {}, metadata = {};
+        const lyricObjs = [];
+        let section = '';
+
+        // The magic line's version decides how a BRACKET reads (mirrors
+        // LyricBeatmapDecoder.ParseFormatVersion): v1 lyrics strip bracketed backing
+        // vocals, v2+ keep them as literal marks. Unversioned falls back to 1, the
+        // reading that cannot invent lyric content.
+        let formatVersion = 1;
+        const magic = /^type!beat file format v(\d+)/.exec(rows[0] ? rows[0].trim() : '');
+        if (magic) formatVersion = parseInt(magic[1], 10);
+
+        for (const raw of rows) {
+            const t = raw.trim();
+            if (t.length === 0) continue;
+            if (t[0] === '[' && t[t.length - 1] === ']') { section = t.slice(1, -1); continue; }
+
+            if (section === 'General' || section === 'Metadata') {
+                const idx = raw.indexOf(':');
+                if (idx >= 0) {
+                    const key = raw.slice(0, idx).trim();
+                    const val = raw.slice(idx + 1).trim();
+                    (section === 'General' ? general : metadata)[key] = val;
+                }
+            } else if (section === 'Lyrics') {
+                try { lyricObjs.push(JSON.parse(t)); } catch (e) { /* tolerate junk */ }
+            }
+        }
+
+        // The [Lyrics] header is the first object WITHOUT a "text" key. No default
+        // granularity — a header-less file derives it from whether lines carry words[].
+        let header = { version: 2 };
+        let lineObjs = lyricObjs;
+        if (lyricObjs.length && !('text' in lyricObjs[0])) {
+            header = lyricObjs[0];
+            lineObjs = lyricObjs.slice(1);
+        }
+
+        const num = (v, d) => { const n = parseFloat(v); return isFinite(n) ? n : d; };
+        return {
+            audioFilename: general['AudioFilename'] || '',
+            audioLeadIn: num(general['AudioLeadIn'], 0),
+            previewTime: num(general['PreviewTime'], -1),
+            title: metadata['Title'] || metadata['TitleUnicode'] || '',
+            artist: metadata['Artist'] || metadata['ArtistUnicode'] || '',
+            creator: metadata['Creator'] || '',
+            beatmapId: parseInt(metadata['BeatmapID'] || '0', 10) || 0,
+            beatmapSetId: parseInt(metadata['BeatmapSetID'] || '0', 10) || 0,
+            formatVersion,
+            header,
+            lineObjs
+        };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Build the playable beatmap: derive per-line timing (TimingJsonLoader.BuildLines)
+    // and expand each line into typeable cells with per-char target times
+    // (TypingLine.FromLyricLine).
+    // ---------------------------------------------------------------------------
+    const CUE_LEAD_MS = 1500;
+    const LAST_LINE_TAIL_MS = 3000;
+    const MAX_SEAL_GRACE_MS = 700;
+    const MIN_BOUNDARY_GRACE_MS = 250;
+    const BOUNDARY_EPSILON_MS = 30;
+    const LOW_CONFIDENCE_SCORE = 0.15;
+
+    function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+    // Beatmap-level granularity: an explicit header value wins; otherwise Word if any
+    // surviving line carries words[], else Line (mirrors LyricBeatmapDecoder.finalise).
+    function granularityFor(header, rawLines) {
+        const g = String((header && header.granularity) || '').toLowerCase();
+        if (g === 'word') return 'Word';
+        if (g === 'syllable') return 'Syllable';
+        if (g === 'line') return 'Line';
+        return rawLines.some(l => l.words.length > 0) ? 'Word' : 'Line';
+    }
+
+    // One TimedUnit per whitespace token, from explicit word times clamped into the line
+    // (mirrors TimingJsonLoader.buildExplicitUnits).
+    function buildExplicitUnits(tokens, words, lineStart, lineEnd) {
+        const units = [];
+        let prevEnd = lineStart;
+        for (let m = 0; m < tokens.length; m++) {
+            let ws = clamp(words[m].start, lineStart, lineEnd);
+            let we = clamp(words[m].end, ws, lineEnd);
+            if (ws < prevEnd) ws = prevEnd; // non-decreasing across units
+            if (we < ws) we = ws;
+            units.push({ text: tokens[m], start: ws, end: we, conf: clamp(words[m].score, 0, 1) });
+            prevEnd = we;
+        }
+        return units;
+    }
+
+    // Per-line fallback: distribute [start, end] over tokens weighted by (typeableCount+1),
+    // one interpolated unit per token, confidence 1 (mirrors LrcParser.InterpolateUnits).
+    function interpolateUnits(normalizedText, start, end) {
+        const units = [];
+        if (!normalizedText) return units;
+        const tokens = normalizedText.split(' ');
+        const weights = tokens.map(t => typeableCount(t) + 1);
+        let totalWeight = weights.reduce((a, b) => a + b, 0);
+        if (totalWeight <= 0) totalWeight = tokens.length;
+        const span = end - start;
+        let cumulative = 0;
+        for (let i = 0; i < tokens.length; i++) {
+            const unitStart = start + span * (cumulative / totalWeight);
+            cumulative += weights[i];
+            const unitEnd = start + span * (cumulative / totalWeight);
+            units.push({ text: tokens[i], start: unitStart, end: unitEnd, conf: 1 });
+        }
+        return units;
+    }
+
+    // Expand a line's tokens+units into per-char cells (mirrors TypingLine.FromLyricLine).
+    // After normalization every char is typeable, so the punctuation passes are no-ops here.
+    function buildCells(tokens, units, estimated, granularity) {
+        const cells = [];
+        for (let m = 0; m < tokens.length; m++) {
+            const unit = units.length > 0 ? units[Math.min(m, units.length - 1)] : null;
+            const unitStart = unit ? unit.start : 0;
+            const unitEnd = unit ? unit.end : 0;
+            const conf = unit ? unit.conf : 1;
+            const tier = (estimated || conf < LOW_CONFIDENCE_SCORE) ? 'Line' : granularity;
+            const token = tokens[m];
+            const k = token.length;
+            for (let j = 0; j < k; j++) {
+                cells.push(newCell(token[j], unitStart + j * (unitEnd - unitStart) / k, tier));
+            }
+            if (m < tokens.length - 1) {
+                cells.push(newCell(' ', unitEnd, tier)); // inter-word space cell
+            }
+        }
+        // Guard: targets non-decreasing.
+        let run = -Infinity;
+        for (const c of cells) { if (c.target < run) c.target = run; else run = c.target; }
+        return cells;
+    }
+
+    function buildBeatmap(parsed) {
+        const header = parsed.header || {};
+        const songEndMs = isFinite(header.song_end_ms) ? header.song_end_ms : null;
+
+        // 1) Raw lines: strip backing vocals (v1 files only, backlog 255) + normalize; DROP
+        //    empty-normalized lines (whole-line backing vocals) so the previous line extends
+        //    over their span (mirrors TryParseRawLine and its stripBackingVocals seam).
+        const stripVocals = (parsed.formatVersion || 1) < 2;
+        const raw = [];
+        for (const o of parsed.lineObjs) {
+            if (o == null || typeof o.text !== 'string') continue;
+            const normalized = normalize(stripVocals ? stripBackingVocals(o.text) : o.text);
+            if (normalized.length === 0) continue;
+            if (!isFinite(+o.start_ms)) continue;
+
+            const startMs = +o.start_ms;
+            const endMs = isFinite(+o.end_ms) ? +o.end_ms : startMs;
+            const estimated = o.estimated === true;
+
+            const words = [];
+            if (Array.isArray(o.words)) {
+                for (const w of o.words) {
+                    if (w == null || typeof w !== 'object') continue;
+                    const ws = isFinite(+w.start_ms) ? +w.start_ms : startMs;
+                    const we = isFinite(+w.end_ms) ? +w.end_ms : ws;
+                    const score = isFinite(+w.score) ? +w.score : 1;
+                    words.push({ text: typeof w.text === 'string' ? w.text : '', start: ws, end: we, score: score });
+                }
+            }
+            const sealGraceMs = isFinite(+o.seal_grace_ms) ? +o.seal_grace_ms : null;
+            raw.push({ text: normalized, startMs, endMs, estimated, words, sealGraceMs });
+        }
+
+        const granularity = granularityFor(header, raw);
+        const lines = [];
+
+        // 2) Resolve per-line boundaries + units (mirrors TimingJsonLoader.BuildLines).
+        for (let i = 0; i < raw.length; i++) {
+            const line = raw[i];
+            const start = line.startMs;
+
+            let endTime;
+            if (i < raw.length - 1) endTime = raw[i + 1].startMs;
+            else {
+                const tailEnd = line.endMs + LAST_LINE_TAIL_MS;
+                endTime = songEndMs != null ? Math.min(songEndMs, tailEnd) : tailEnd;
+            }
+            if (endTime < start) endTime = start;
+
+            const singEndTime = clamp(line.endMs, start, endTime);
+
+            // Seal grace from raw (pre-clamp) word overrun, unless an explicit grace was written.
+            let rawWordsEnd = start;
+            for (const w of line.words) rawWordsEnd = Math.max(rawWordsEnd, w.start, w.end);
+            let sealGrace = line.sealGraceMs != null
+                ? clamp(line.sealGraceMs, 0, MAX_SEAL_GRACE_MS)
+                : Math.min(Math.max(0, rawWordsEnd - endTime), MAX_SEAL_GRACE_MS);
+
+            const tokens = line.text.split(' ');
+            const units = (tokens.length === line.words.length && tokens.length > 0)
+                ? buildExplicitUnits(tokens, line.words, start, endTime)
+                : interpolateUnits(line.text, start, singEndTime);
+
+            const cells = buildCells(tokens, units, line.estimated, granularity);
+
+            const firstTarget = cells.length ? cells[0].target : start;
+            const activationTime = Math.max(start, firstTarget - CUE_LEAD_MS);
+
+            // Boundary bump: a last cell on the seal boundary gets a minimum finish window.
+            let grace = sealGrace;
+            if (cells.length && cells[cells.length - 1].target >= endTime - BOUNDARY_EPSILON_MS) {
+                grace = Math.max(grace, MIN_BOUNDARY_GRACE_MS);
+            }
+            grace = Math.min(grace, MAX_SEAL_GRACE_MS);
+
+            lines.push({
+                index: i,
+                text: line.text,
+                startTime: start,
+                endTime: endTime,
+                singEndTime: singEndTime,
+                activationTime: activationTime,
+                sealGraceMs: grace,
+                estimated: line.estimated,
+                cells: cells
+            });
+        }
+
+        return {
+            title: parsed.title,
+            artist: parsed.artist,
+            creator: parsed.creator,
+            beatmapId: parsed.beatmapId,
+            granularity: granularity,
+            audioFilename: parsed.audioFilename,
+            lines: lines,
+            totalCells: lines.reduce((n, l) => n + l.cells.length, 0)
+        };
+    }
+
+    function newCell(expected, target, tier) {
+        return {
+            expected: expected,
+            target: target,
+            tier: tier,
+            typeable: true,          // after normalization every cell is typeable
+            state: 'untyped',        // untyped | correct | missed
+            judgeType: null,         // Perfect | Good | Ok | Premature | Lagging | Miss
+            typedChar: null,
+            judgedDelta: null,
+            firstCorrectDelta: null
+        };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Judgement windows (Judgement.cs SyncWindows).
+    // ---------------------------------------------------------------------------
+    const BASE_WINDOWS = { pe: 250, pl: 400, ge: 600, gl: 1000, oe: 1200, ol: 2000 };
+    const TIER_SCALE = { Line: 1.0, Word: 0.6, Syllable: 0.45 };
+
+    function windowsFor(tier) {
+        const s = TIER_SCALE[tier] != null ? TIER_SCALE[tier] : 1.0;
+        return { pe: BASE_WINDOWS.pe * s, pl: BASE_WINDOWS.pl * s, ge: BASE_WINDOWS.ge * s, gl: BASE_WINDOWS.gl * s, oe: BASE_WINDOWS.oe * s, ol: BASE_WINDOWS.ol * s };
+    }
+
+    function classify(delta, w) {
+        if (delta >= -w.pe && delta <= w.pl) return 'Perfect';
+        if (delta >= -w.ge && delta <= w.gl) return 'Good';
+        if (delta >= -w.oe && delta <= w.ol) return 'Ok';
+        return delta < -w.oe ? 'Premature' : 'Lagging';
+    }
+
+    function basePoints(type) {
+        return type === 'Perfect' ? 300 : type === 'Good' ? 150 : type === 'Ok' ? 50 : 0;
+    }
+
+    // Engine judgement -> osu HitResult (DrawableTypeBeatHitObject.toHitResult).
+    function toHitResult(judgeType) {
+        switch (judgeType) {
+            case 'Perfect': return 'great';
+            case 'Good': return 'ok';
+            case 'Ok': return 'meh';
+            default: return 'miss'; // Premature, Lagging, Miss, or untyped
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // TypingEngine — the frame-driven gameplay/judgement core.
+    // ---------------------------------------------------------------------------
+    const COMBO_CAP = 50;
+    const WRONG_KEY_FAIL_STREAK = 13;
+
+    class TypingEngine {
+        constructor(beatmap) {
+            this.beatmap = beatmap;
+            this.lines = beatmap.lines;
+            // Cells carry play state on the (shared) beatmap, so a fresh engine — e.g.
+            // "play again" reusing the same beatmap — must clear it first.
+            for (const line of this.lines) {
+                for (const c of line.cells) {
+                    c.state = 'untyped';
+                    c.judgeType = null;
+                    c.typedChar = null;
+                    c.judgedDelta = null;
+                    c.firstCorrectDelta = null;
+                }
+            }
+            this.activeLineIndex = -1;
+            this.caretIndex = 0;
+            this.nextSealIndex = 0;
+            this.combo = 0;
+            this.maxCombo = 0;
+            this.score = 0;
+            this.totalKeypresses = 0;
+            this.correctKeypresses = 0;
+            this.errorCount = 0;
+            this.consecutiveWrongKeys = 0;
+            this.activeTimeMs = 0;
+            this.lastUpdateTime = null;
+            this.finished = false;
+            this.failed = false;
+            this.counts = {};                 // JudgementType -> count (scored only)
+            // event hooks (optional; set by the renderer)
+            this.onCharJudged = null;
+            this.onWrongKey = null;
+            this.onComboBroken = null;
+            this.onFinished = null;
+            this.onFailed = null;
+        }
+
+        get health() { return Math.max(0, 1 - this.consecutiveWrongKeys / WRONG_KEY_FAIL_STREAK); }
+
+        get liveAccuracy() { return this.totalKeypresses > 0 ? this.correctKeypresses / this.totalKeypresses : 1; }
+
+        countCorrectCells() {
+            let n = 0;
+            for (const line of this.lines) for (const c of line.cells) if (c.state === 'correct') n++;
+            return n;
+        }
+
+        get liveWpm() {
+            return this.activeTimeMs <= 0 ? 0 : (this.countCorrectCells() / 5.0) / (this.activeTimeMs / 60000.0);
+        }
+
+        isLineComplete(idx) {
+            const line = this.lines[idx];
+            return this.caretIndex >= line.cells.length;
+        }
+
+        noTypeableUntyped(line) {
+            for (const c of line.cells) if (c.typeable && c.state === 'untyped') return false;
+            return true;
+        }
+
+        canSeal(line, time) {
+            return time >= line.endTime && (time >= line.endTime + line.sealGraceMs || this.noTypeableUntyped(line));
+        }
+
+        sealLine(idx) {
+            const line = this.lines[idx];
+            let missed = 0;
+            for (const c of line.cells) {
+                // A cell that was ever typed correctly keeps its first result (firstCorrectDelta
+                // stands, even if later backspaced) — only never-correct cells seal as Miss.
+                if (c.typeable && c.state === 'untyped' && c.firstCorrectDelta === null) {
+                    c.state = 'missed';
+                    c.judgeType = 'Miss';
+                    missed++;
+                }
+            }
+            if (missed > 0) {
+                this.combo = 0;
+                if (this.onComboBroken) this.onComboBroken();
+            }
+        }
+
+        autoSkipForward() {
+            if (this.activeLineIndex < 0) return;
+            const cells = this.lines[this.activeLineIndex].cells;
+            while (this.caretIndex < cells.length && !cells[this.caretIndex].typeable) {
+                cells[this.caretIndex].state = 'autoskip';
+                this.caretIndex++;
+            }
+        }
+
+        update(time) {
+            // (1) accrue active typing time using this frame's span.
+            if (this.lastUpdateTime !== null && this.activeLineIndex >= 0 && !this.finished && !this.isLineComplete(this.activeLineIndex)) {
+                this.activeTimeMs += Math.max(0, time - this.lastUpdateTime);
+            }
+            this.lastUpdateTime = time;
+
+            // (2) seal every line whose deadline passed, in order.
+            while (this.nextSealIndex < this.lines.length && this.canSeal(this.lines[this.nextSealIndex], time)) {
+                this.sealLine(this.nextSealIndex);
+                if (this.activeLineIndex === this.nextSealIndex) this.activeLineIndex = -1;
+                this.nextSealIndex++;
+            }
+
+            // (3) finish, or activate the next line inside its cue window.
+            if (this.nextSealIndex >= this.lines.length) {
+                if (!this.finished) {
+                    this.finished = true;
+                    if (this.onFinished) this.onFinished();
+                }
+                return;
+            }
+            if (this.activeLineIndex < 0) {
+                const cand = this.lines[this.nextSealIndex];
+                if (time >= cand.activationTime && time < cand.endTime + cand.sealGraceMs) {
+                    this.activeLineIndex = this.nextSealIndex;
+                    this.caretIndex = 0;
+                    this.autoSkipForward();
+                }
+            }
+        }
+
+        processKey(c, time) {
+            if (this.finished || this.failed) return false;
+            if (this.activeLineIndex < 0) return false; // dead zone / pre-roll: harmless
+            const line = this.lines[this.activeLineIndex];
+            this.autoSkipForward();
+            if (this.caretIndex >= line.cells.length) return false; // line fully typed
+            const cell = line.cells[this.caretIndex];
+            const delta = time - cell.target;
+            const matched = fold(c) === fold(cell.expected);
+
+            if (!matched) {
+                // Wrong key — REJECTED. Costs a keypress + combo + streak; caret unmoved.
+                this.totalKeypresses++;
+                this.errorCount++;
+                this.consecutiveWrongKeys++;
+                this.combo = 0;
+                this.counts.WrongChar = (this.counts.WrongChar || 0) + 1;
+                if (this.onComboBroken) this.onComboBroken();
+                if (this.onWrongKey) this.onWrongKey(c, this.caretIndex);
+                if (this.consecutiveWrongKeys >= WRONG_KEY_FAIL_STREAK) {
+                    this.failed = true;
+                    if (this.onFailed) this.onFailed();
+                }
+                return true;
+            }
+
+            this.consecutiveWrongKeys = 0;
+
+            const w = windowsFor(cell.tier);
+            const inertRetype = cell.firstCorrectDelta !== null;
+            let type, points = 0;
+
+            if (inertRetype) {
+                const d = cell.firstCorrectDelta;
+                type = classify(d, w);
+                cell.state = 'correct';
+                cell.typedChar = c;
+                cell.judgedDelta = d;
+                cell.judgeType = type;
+            } else {
+                this.totalKeypresses++;
+                this.correctKeypresses++;
+                type = classify(delta, w);
+                const bp = basePoints(type);
+                if (bp > 0) {
+                    points = Math.round(bp * (1 + Math.min(this.combo, COMBO_CAP) / COMBO_CAP));
+                    this.score += points;
+                    this.combo++;
+                    if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+                } else {
+                    // right char, wrong time — Premature/Lagging: no points, combo breaks.
+                    this.combo = 0;
+                    if (this.onComboBroken) this.onComboBroken();
+                }
+                cell.state = 'correct';
+                cell.typedChar = c;
+                cell.judgedDelta = delta;
+                cell.firstCorrectDelta = delta;
+                cell.judgeType = type;
+                this.counts[type] = (this.counts[type] || 0) + 1;
+            }
+
+            const judgedIndex = this.caretIndex;
+            this.caretIndex++;
+            this.autoSkipForward();
+            if (this.onCharJudged) this.onCharJudged(judgedIndex, type, points);
+            return true;
+        }
+
+        processBackspace() {
+            if (this.activeLineIndex < 0) return;
+            const cells = this.lines[this.activeLineIndex].cells;
+            let i = this.caretIndex - 1;
+            while (i >= 0 && cells[i].state === 'autoskip') { cells[i].state = 'untyped'; i--; }
+            if (i < 0) { this.caretIndex = 0; return; }
+            const cell = cells[i];
+            cell.state = 'untyped';
+            cell.typedChar = null;
+            cell.judgedDelta = null;
+            cell.judgeType = null;
+            // firstCorrectDelta intentionally retained (inert-retype guard).
+            this.caretIndex = i;
+        }
+
+        // The character to type right now (or null).
+        get caretCell() {
+            if (this.activeLineIndex < 0) return null;
+            const cells = this.lines[this.activeLineIndex].cells;
+            return this.caretIndex < cells.length ? cells[this.caretIndex] : null;
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Scoring — standardised total_score + statistics dicts + completion rank.
+    // Reproduces osu ScoreProcessor.ComputeTotalScore and the completion cutoffs.
+    // ---------------------------------------------------------------------------
+    const COMPLETION_CUTOFFS = [[1.0, 'X'], [0.95, 'S'], [0.90, 'A'], [0.80, 'B'], [0.70, 'C']];
+
+    function rankFromCompletion(completion) {
+        for (const [cut, r] of COMPLETION_CUTOFFS) if (completion >= cut) return r;
+        return 'D';
+    }
+
+    function computeScore(engine) {
+        const beatmap = engine.beatmap;
+        const total = beatmap.totalCells;
+
+        // Per-cell osu result, in order. The FIRST correct judgement stands for a cell — even
+        // if later backspaced (firstCorrectDelta), matching the drawable's "first result stands".
+        // A rejected wrong key never produced a cell result, so it never appears here.
+        const results = [];
+        for (const line of engine.lines) {
+            for (const cell of line.cells) {
+                if (!cell.typeable) continue;
+                if (cell.firstCorrectDelta !== null) {
+                    results.push(toHitResult(classify(cell.firstCorrectDelta, windowsFor(cell.tier))));
+                } else if (cell.state === 'missed') {
+                    results.push('miss');
+                } else {
+                    results.push(null); // never judged (unreached on a failed run)
+                }
+            }
+        }
+
+        let great = 0, ok = 0, meh = 0, miss = 0;
+        for (const r of results) {
+            if (r === 'great') great++;
+            else if (r === 'ok') ok++;
+            else if (r === 'meh') meh++;
+            else if (r === 'miss') miss++;
+        }
+        const judged = great + ok + meh + miss;
+
+        // Whole-map accuracy (for display/completion); server overrides the submitted value.
+        const acc = total > 0 ? (300 * great + 100 * ok + 50 * meh) / (300 * total) : 1;
+
+        // Combo portions + max combo from the ordered result stream. Combo breaks only on a
+        // Miss cell (never on a rejected wrong key — those aren't in `results`); unreached (null)
+        // cells contribute nothing. maxComboPortion is the whole-map (all-Great) maximum.
+        let combo = 0, comboPortion = 0, maxComboCounter = 0, maxComboPortion = 0, maxCombo = 0;
+        for (const r of results) {
+            maxComboCounter++;
+            maxComboPortion += 300 * Math.sqrt(maxComboCounter);
+            if (r === 'great' || r === 'ok' || r === 'meh') {
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                comboPortion += 300 * Math.sqrt(combo);
+            } else if (r === 'miss') {
+                combo = 0;
+            }
+            // null (unreached): leave combo as-is; it accrues no portion.
+        }
+        const comboProgress = maxComboPortion > 0 ? comboPortion / maxComboPortion : 1;
+        const accuracyProgress = total > 0 ? judged / total : 1;
+
+        // total_score uses the JUDGED-only accuracy denominator (ScoreProcessor.Accuracy =
+        // currentBaseScore / currentMaximumBaseScore, judged cells only) — equals whole-map
+        // accuracy for a completed play, differs only for a failed/incomplete (unranked) run.
+        const accJudged = judged > 0 ? (300 * great + 100 * ok + 50 * meh) / (300 * judged) : 1;
+        const totalWithoutMods = Math.round(500000 * accJudged * comboProgress + 500000 * Math.pow(accJudged, 5) * accuracyProgress);
+        const totalScore = totalWithoutMods; // scoreMultiplier = 1 (no mods)
+
+        const completion = total > 0 ? (great + ok + meh) / total : 1;
+        const passed = engine.finished && !engine.failed;
+
+        const statistics = {};
+        if (great) statistics.great = great;
+        if (ok) statistics.ok = ok;
+        if (meh) statistics.meh = meh;
+        if (miss) statistics.miss = miss;
+
+        return {
+            passed: passed,
+            totalScore: totalScore,
+            totalScoreWithoutMods: totalWithoutMods,
+            accuracy: acc,
+            maxCombo: maxCombo,
+            completion: completion,
+            rank: passed ? rankFromCompletion(completion) : 'F',
+            statistics: statistics,
+            maximumStatistics: { great: total },
+            // convenience for the results screen
+            counts: { great, ok, meh, miss },
+            wpm: engine.liveWpm
+        };
+    }
+
+    global.TypeBeatCore = {
+        // low-level
+        isTypeable, normalize, parseLyricOsu, buildBeatmap,
+        TypingEngine, computeScore, rankFromCompletion,
+        windowsFor, classify, toHitResult,
+        constants: { CUE_LEAD_MS, WRONG_KEY_FAIL_STREAK, LOW_CONFIDENCE_SCORE },
+        // the renderer/high-level mount is attached in typebeat-player.js
+    };
+})(window);
+</script>
+<script>/*
+ * typebeat-player.js — the browser renderer + Web Audio driver on top of
+ * typebeat-core.js. Exposes TypeBeatCore.mountPlayer(container, opts).
+ *
+ * opts:
+ *   osuText            : string   (the .osu lyric text)
+ *   audioArrayBuffer   : ArrayBuffer (raw encoded audio bytes; decoded here)
+ *   title, artist      : strings  (for the results header; falls back to the map)
+ *   onFinish(results, api) : called once when a play ends (pass or fail)
+ *   onExit()           : called when the player wants to leave (back button)
+ *
+ * Timing is driven by the Web AudioContext clock (sample-accurate); gameplay
+ * time = (ctx.currentTime - startedAt) * 1000, matching the desktop's
+ * audio-sourced gameplay clock with LyricOffset = 0.
+ */
+(function (Core) {
+    'use strict';
+    if (!Core) return;
+
+    const KEY_RE = /^[a-zA-Z0-9]$/;
+
+    function el(tag, cls, html) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (html != null) e.innerHTML = html;
+        return e;
+    }
+
+    function fmtInt(n) { return Math.round(n).toLocaleString('en-US'); }
+    function fmtPct(x) { return (x * 100).toFixed(2) + '%'; }
+
+    function mountPlayer(container, opts) {
+        const beatmap = Core.buildBeatmap(Core.parseLyricOsu(opts.osuText));
+        const title = opts.title || beatmap.title || 'untitled';
+        const artist = opts.artist || beatmap.artist || '';
+
+        container.innerHTML = '';
+        const root = el('div', 'tb-player');
+        container.appendChild(root);
+
+        // --- scaffold --------------------------------------------------------
+        const hud = el('div', 'tb-hud');
+        const hudScore = el('div', 'tb-hud-stat', '<span class="tb-hud-val" id="tb-score">0</span><span class="tb-hud-lbl">score</span>');
+        const hudCombo = el('div', 'tb-hud-stat', '<span class="tb-hud-val" id="tb-combo">0</span><span class="tb-hud-lbl">combo</span>');
+        const hudAcc = el('div', 'tb-hud-stat', '<span class="tb-hud-val" id="tb-acc">100%</span><span class="tb-hud-lbl">typed</span>');
+        const hudWpm = el('div', 'tb-hud-stat', '<span class="tb-hud-val" id="tb-wpm">0</span><span class="tb-hud-lbl">wpm</span>');
+        hud.append(hudScore, hudCombo, hudAcc, hudWpm);
+
+        const health = el('div', 'tb-health');
+        const healthFill = el('div', 'tb-health-fill');
+        health.appendChild(healthFill);
+
+        const stage = el('div', 'tb-stage');
+        const rowPrev = el('div', 'tb-line tb-line-prev');
+        const rowCur = el('div', 'tb-line tb-line-cur');
+        const rowNext = el('div', 'tb-line tb-line-next');
+        stage.append(rowPrev, rowCur, rowNext);
+
+        const progress = el('div', 'tb-progress');
+        const progressFill = el('div', 'tb-progress-fill');
+        progress.appendChild(progressFill);
+
+        const meta = el('div', 'tb-meta', `<span class="tb-meta-title">${escapeHtml(title)}</span>${artist ? ' <span class="tb-meta-artist">' + escapeHtml(artist) + '</span>' : ''}`);
+
+        const overlay = el('div', 'tb-overlay');
+        root.append(hud, health, stage, progress, meta, overlay);
+
+        const scoreEl = root.querySelector('#tb-score');
+        const comboEl = root.querySelector('#tb-combo');
+        const accEl = root.querySelector('#tb-acc');
+        const wpmEl = root.querySelector('#tb-wpm');
+
+        // --- audio + engine state -------------------------------------------
+        let audioCtx = null, audioBuffer = null, source = null;
+        let startedAt = 0, raf = 0, backstop = 0, engine = null, concluded = false, running = false;
+        let startKeyHandler = null; // capturing keydown listener while the start gate is up
+
+        function nowMs() { return audioCtx ? (audioCtx.currentTime - startedAt) * 1000 : 0; }
+
+        function cleanupAudio() {
+            if (source) { try { source.stop(); } catch (e) {} try { source.disconnect(); } catch (e) {} source = null; }
+        }
+
+        function removeStartKey() {
+            if (startKeyHandler) { document.removeEventListener('keydown', startKeyHandler, true); startKeyHandler = null; }
+        }
+
+        function destroy() {
+            running = false;
+            if (raf) cancelAnimationFrame(raf);
+            if (backstop) { clearInterval(backstop); backstop = 0; }
+            document.removeEventListener('keydown', onKeyDown, true);
+            removeStartKey();
+            cleanupAudio();
+            if (audioCtx) { try { audioCtx.close(); } catch (e) {} audioCtx = null; }
+        }
+
+        // --- input -----------------------------------------------------------
+        function onKeyDown(e) {
+            if (!running || !engine) return;
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+            if (e.key === 'Backspace') { e.preventDefault(); engine.processBackspace(); return; }
+            if (e.repeat) return;
+            let ch = null;
+            if (e.key === ' ' || e.code === 'Space') ch = ' ';
+            else if (e.key && e.key.length === 1 && KEY_RE.test(e.key)) ch = e.key;
+            if (ch !== null) {
+                e.preventDefault();
+                engine.processKey(ch, nowMs());
+            }
+        }
+
+        // --- render ----------------------------------------------------------
+        let lastCurIdx = -2, wrongFlash = 0;
+
+        function lineToSpans(line, isActive, caretIndex) {
+            const frag = document.createDocumentFragment();
+            if (!line) return frag;
+            for (let i = 0; i < line.cells.length; i++) {
+                if (isActive && i === caretIndex) {
+                    frag.appendChild(el('span', 'tb-caret'));
+                }
+                const cell = line.cells[i];
+                let cls = 'tb-c';
+                if (cell.state === 'correct') {
+                    const jt = cell.judgeType;
+                    if (jt === 'Perfect' || jt === 'Good' || jt === 'Ok') cls += ' tb-c-hit';
+                    else cls += ' tb-c-off'; // typed but off-time (scores as a miss)
+                } else if (cell.state === 'missed') {
+                    cls += ' tb-c-miss';
+                } else {
+                    cls += ' tb-c-todo';
+                }
+                if (isActive && i === caretIndex) cls += ' tb-c-at';
+                const ch = cell.expected === ' ' ? ' ' : cell.expected;
+                const span = el('span', cls);
+                span.textContent = ch;
+                frag.appendChild(span);
+            }
+            if (isActive && caretIndex >= line.cells.length) {
+                frag.appendChild(el('span', 'tb-caret'));
+            }
+            return frag;
+        }
+
+        function render() {
+            const curIdx = engine.activeLineIndex >= 0 ? engine.activeLineIndex
+                : Math.min(engine.nextSealIndex, beatmap.lines.length - 1);
+            const active = engine.activeLineIndex >= 0;
+
+            rowCur.classList.toggle('tb-line-live', active);
+            rowCur.innerHTML = '';
+            rowCur.appendChild(lineToSpans(beatmap.lines[curIdx], active, engine.caretIndex));
+
+            if (curIdx !== lastCurIdx) {
+                rowPrev.innerHTML = '';
+                rowPrev.appendChild(lineToSpans(beatmap.lines[curIdx - 1], false, -1));
+                rowNext.innerHTML = '';
+                rowNext.appendChild(lineToSpans(beatmap.lines[curIdx + 1], false, -1));
+                lastCurIdx = curIdx;
+            }
+
+            scoreEl.textContent = fmtInt(engine.score);
+            comboEl.textContent = engine.combo + 'x';
+            accEl.textContent = Math.round(liveCompletion() * 100) + '%';
+            wpmEl.textContent = Math.round(engine.liveWpm);
+
+            healthFill.style.width = (engine.health * 100) + '%';
+            healthFill.classList.toggle('tb-health-danger', engine.consecutiveWrongKeys >= 8);
+
+            if (audioBuffer) {
+                const p = Math.max(0, Math.min(1, nowMs() / (audioBuffer.duration * 1000)));
+                progressFill.style.width = (p * 100) + '%';
+            }
+
+            if (wrongFlash > 0) { root.classList.add('tb-shake'); wrongFlash--; }
+            else root.classList.remove('tb-shake');
+        }
+
+        // Live "typed %": hits / cells seen so far (matches how completion reads mid-play).
+        function liveCompletion() {
+            let hit = 0, seen = 0;
+            for (const line of beatmap.lines) {
+                for (const c of line.cells) {
+                    if (c.state === 'correct' && (c.judgeType === 'Perfect' || c.judgeType === 'Good' || c.judgeType === 'Ok')) { hit++; seen++; }
+                    else if (c.state === 'correct' || c.state === 'missed') seen++;
+                }
+            }
+            return seen > 0 ? hit / seen : 1;
+        }
+
+        // --- loop / lifecycle ------------------------------------------------
+        // One tick = advance the audio-clocked engine + repaint. Driven by rAF while
+        // the tab is visible (vsync-smooth); a low-rate setInterval backstop keeps it
+        // ticking when the tab is hidden and rAF is paused, so state stays consistent
+        // with the still-playing audio instead of freezing.
+        function tick() {
+            if (!running) return;
+            engine.update(nowMs());
+            render();
+            if ((engine.finished || engine.failed) && !concluded) conclude();
+        }
+        function rafLoop() {
+            if (!running) return;
+            tick();
+            if (running) raf = requestAnimationFrame(rafLoop);
+        }
+
+        function conclude() {
+            concluded = true;
+            running = false;
+            if (raf) cancelAnimationFrame(raf);
+            if (backstop) { clearInterval(backstop); backstop = 0; }
+            document.removeEventListener('keydown', onKeyDown, true);
+            if (engine.failed) cleanupAudio();
+            const results = Core.computeScore(engine);
+            showResults(results);
+            if (opts.onFinish) { try { opts.onFinish(results, publicApi); } catch (e) { console.error(e); } }
+        }
+
+        function begin() {
+            engine = new Core.TypingEngine(beatmap);
+            engine.onWrongKey = function () { wrongFlash = 6; };
+            concluded = false;
+            lastCurIdx = -2;
+            removeStartKey();
+            // A fresh play (including "play again") starts a new scoring session — let the host
+            // mint a fresh score token here so its min-play-time gate keys off this play's start.
+            if (opts.onPlayStart) { try { opts.onPlayStart(); } catch (e) { console.error(e); } }
+            overlay.className = 'tb-overlay';
+            overlay.innerHTML = '';
+            cleanupAudio();
+            source = audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            // Default playback at 10% (90% quieter) — the map audio is loud on its own.
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0.1;
+            source.connect(gain);
+            gain.connect(audioCtx.destination);
+            startedAt = audioCtx.currentTime + 0.06; // small scheduling lead
+            source.start(startedAt);
+            running = true;
+            document.addEventListener('keydown', onKeyDown, true);
+            raf = requestAnimationFrame(rafLoop);
+            backstop = setInterval(function () { if (running && document.hidden) tick(); }, 250);
+        }
+
+        function showStartGate(label) {
+            overlay.className = 'tb-overlay tb-overlay-on';
+            overlay.innerHTML = '';
+            const card = el('div', 'tb-card');
+            card.appendChild(el('div', 'tb-card-title', escapeHtml(title)));
+            if (artist) card.appendChild(el('div', 'tb-card-sub', escapeHtml(artist)));
+            card.appendChild(el('div', 'tb-card-hint', 'type the lyrics as they are sung · 13 wrong keys in a row and you fail'));
+            const btn = el('button', 'tb-btn tb-btn-primary', label || 'press space to start');
+            card.appendChild(btn);
+            overlay.appendChild(card);
+            const go = () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                begin(); // begin() removes the start-key listener and mints a fresh token
+            };
+            btn.addEventListener('click', go);
+            removeStartKey();
+            startKeyHandler = (e) => { if (e.key === ' ' || e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); go(); } };
+            document.addEventListener('keydown', startKeyHandler, true);
+        }
+
+        function showResults(results) {
+            overlay.className = 'tb-overlay tb-overlay-on';
+            overlay.innerHTML = '';
+            const card = el('div', 'tb-card tb-results');
+            card.appendChild(el('div', 'tb-rank tb-rank-' + results.rank.replace(/[^A-Z]/gi, ''), results.rank));
+            card.appendChild(el('div', 'tb-card-title', results.passed ? 'cleared' : 'failed'));
+            const grid = el('div', 'tb-result-grid');
+            grid.innerHTML =
+                statCell('score', fmtInt(results.totalScore)) +
+                statCell('typed', fmtPct(results.completion)) +
+                statCell('accuracy', fmtPct(results.accuracy)) +
+                statCell('max combo', results.maxCombo + 'x') +
+                statCell('wpm', Math.round(results.wpm)) +
+                statCell('misses', results.counts.miss);
+            card.appendChild(grid);
+            const status = el('div', 'tb-submit-status', '');
+            card.appendChild(status);
+            const actions = el('div', 'tb-result-actions');
+            const again = el('button', 'tb-btn tb-btn-primary', 'play again');
+            again.addEventListener('click', () => showStartGate('press space to start'));
+            actions.appendChild(again);
+            if (opts.onExit) {
+                const back = el('button', 'tb-btn tb-btn-ghost', 'back to maps');
+                back.addEventListener('click', () => { destroy(); opts.onExit(); });
+                actions.appendChild(back);
+            }
+            card.appendChild(actions);
+            overlay.appendChild(card);
+            publicApi._status = status;
+        }
+
+        function statCell(label, val) {
+            return `<div class="tb-result-cell"><span class="tb-result-val">${escapeHtml(String(val))}</span><span class="tb-result-lbl">${escapeHtml(label)}</span></div>`;
+        }
+
+        // --- public api ------------------------------------------------------
+        const publicApi = {
+            beatmap,
+            destroy,
+            get engine() { return engine; },
+            setSubmitStatus(html, cls) {
+                if (publicApi._status) {
+                    publicApi._status.innerHTML = html;
+                    publicApi._status.className = 'tb-submit-status' + (cls ? ' ' + cls : '');
+                }
+            }
+        };
+
+        // --- boot: decode audio then show the start gate ---------------------
+        overlay.className = 'tb-overlay tb-overlay-on';
+
+        // Guard an empty/unparseable map (no typeable cells) — otherwise the first tick would
+        // instantly "clear" it with rank X. Nothing to play.
+        if (!beatmap.lines.length || !beatmap.totalCells) {
+            overlay.appendChild(el('div', 'tb-card', '<div class="tb-card-title">unplayable map</div><div class="tb-card-hint">this map has no typeable lyrics.</div>'));
+            return publicApi;
+        }
+
+        overlay.appendChild(el('div', 'tb-card', '<div class="tb-card-title">loading…</div>'));
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) {
+            overlay.innerHTML = '';
+            overlay.appendChild(el('div', 'tb-card', '<div class="tb-card-title">unsupported browser</div><div class="tb-card-hint">this browser has no Web Audio support.</div>'));
+            return publicApi;
+        }
+        audioCtx = new AC();
+        // decodeAudioData needs a fresh copy (some browsers detach the buffer).
+        const bytes = opts.audioArrayBuffer.slice(0);
+        audioCtx.decodeAudioData(bytes,
+            (buf) => { audioBuffer = buf; showStartGate('press space to start'); },
+            (err) => {
+                overlay.innerHTML = '';
+                overlay.appendChild(el('div', 'tb-card', '<div class="tb-card-title">could not load audio</div><div class="tb-card-hint">this map’s audio format isn’t supported by your browser.</div>'));
+                console.error('decodeAudioData failed', err);
+            });
+
+        return publicApi;
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    Core.mountPlayer = mountPlayer;
+    Core.escapeHtml = escapeHtml;
+})(window.TypeBeatCore);
+</script>
+<script>
+(function(){
+  var OSU = document.getElementById('tb-osu-data').textContent;
+  var mount = document.getElementById('mount');
+  fetch('song.mp3').then(function(r){ if(!r.ok) throw new Error('audio '+r.status); return r.arrayBuffer(); })
+    .then(function(buf){
+      TypeBeatCore.mountPlayer(mount, {
+        osuText: OSU,
+        audioArrayBuffer: buf,
+        onFinish: function(results, api){ api.setSubmitStatus('demo build — scores are local only', 'tb-status-muted'); }
+      });
+    })
+    .catch(function(e){
+      mount.innerHTML = '<div class="tb-loading">could not load song.mp3 — this demo must be served over http (itch does this automatically).</div>';
+      console.error(e);
+    });
+})();
+</script>
+</body>
+</html>
