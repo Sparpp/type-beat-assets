@@ -1,3 +1,6 @@
 artifacts/
 bin/
 obj/
+itch-demo/*.mp3
+itch-demo/*.zip
+itch-demo/README.txt
